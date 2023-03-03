@@ -25,13 +25,51 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
 Eigen::Matrix4f get_model_matrix(float rotation_angle)
 {
     Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
+    auto radian = rotation_angle / 180.0 * MY_PI;
+
+    Eigen::Matrix4f translate;
+    
+    translate << cos(radian), -sin(radian), 0, 0,
+                 sin(radian),  cos(radian), 0, 0,
+                           0,            0, 1, 0,
+                           0,            0, 0, 1;
+    
+    model = translate * model;
     return model;
 }
 
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
     // TODO: Copy-paste your implementation from the previous assignment.
-    Eigen::Matrix4f projection;
+    Eigen::Matrix4f projection  = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f persp       = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f orthoScale  = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f orthoTrans  = Eigen::Matrix4f::Identity();
+    // TODO: Implement this function
+    // Create the projection matrix for the given parameters.
+    // Then return it.
+    persp << zNear,     0,            0,             0,
+                 0, zNear,            0,             0,
+                 0,     0, zNear + zFar, -zFar * zNear,
+                 0,     0,            1,             0;
+
+    double halfEyeRadian = eye_fov * MY_PI / 2.0 / 180.0 ;
+    double top           = -zNear * tan(halfEyeRadian);
+    double left          = -top * aspect_ratio;
+    double right         = -left;
+    double bottom        = -top;
+    
+    orthoScale << 2 / (right - left),                  0,                  0,0,
+                                   0, 2 / (top - bottom),                  0,0,
+                                   0,                  0, 2 / (zNear - zFar),0,
+                                   0,                  0,                  0,1;
+
+    orthoTrans << 1, 0, 0, -(right + left) / (right - left),
+                  0, 1, 0, -(top + bottom) / (top - bottom),
+                  0, 0, 1, -(zNear + zFar) / (zNear - zFar),
+                  0, 0, 0, 1;
+
+    projection = orthoTrans * orthoScale * persp;
 
     return projection;
 }
