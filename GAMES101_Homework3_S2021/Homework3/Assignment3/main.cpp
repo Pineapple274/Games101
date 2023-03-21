@@ -115,7 +115,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     if (payload.texture)
     {
         // TODO: Get the texture value at the texture coordinates of the current fragment
-        
+        return_color = payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -143,7 +143,20 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
-
+        Eigen::Vector3f lightPos = light.position - point;
+        // Ambient modulation
+        Eigen::Vector3f La{ka.x() * amb_light_intensity.x(), ka.y() * amb_light_intensity.y(), ka.z() * amb_light_intensity.z()}; 
+        // Diffuse modulation
+        Eigen::Vector3f Ld{kd.x() * light.intensity.x(), kd.y() * light.intensity.y(), kd.z() * light.intensity.z()};
+        Ld *= std::max(0.f, normal.normalized().dot(lightPos.normalized())) / lightPos.squaredNorm();
+        // Specular modulation
+        Eigen::Vector3f Ls{ks.x() * light.intensity.x(), ks.y() * light.intensity.y(), ks.z() * light.intensity.z()};
+        // Reflection
+        Eigen::Vector3f r = reflect(lightPos.normalized(), normal.normalized());
+        Eigen::Vector3f v = (eye_pos - point).normalized();
+        Ls *= std::pow(std::max(0.f, r.dot(v)), p)/ lightPos.squaredNorm();
+        Eigen::Vector3f I = La + Ld + Ls;
+        result_color += I;
     }
 
     return result_color * 255.f;
@@ -173,7 +186,20 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
-        
+        Eigen::Vector3f lightPos = light.position - point;
+        // Ambient modulation
+        Eigen::Vector3f La{ka.x() * amb_light_intensity.x(), ka.y() * amb_light_intensity.y(), ka.z() * amb_light_intensity.z()}; 
+        // Diffuse modulation
+        Eigen::Vector3f Ld{kd.x() * light.intensity.x(), kd.y() * light.intensity.y(), kd.z() * light.intensity.z()};
+        Ld *= std::max(0.f, normal.normalized().dot(lightPos.normalized())) / lightPos.squaredNorm();
+        // Specular modulation
+        Eigen::Vector3f Ls{ks.x() * light.intensity.x(), ks.y() * light.intensity.y(), ks.z() * light.intensity.z()};
+        // Reflection
+        Eigen::Vector3f r = reflect(lightPos.normalized(), normal.normalized());
+        Eigen::Vector3f v = (eye_pos - point).normalized();
+        Ls *= std::pow(std::max(0.f, r.dot(v)), p)/ lightPos.squaredNorm();
+        Eigen::Vector3f I = La + Ld + Ls;
+        result_color += I;
     }
 
     return result_color * 255.f;
@@ -221,7 +247,20 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
-
+        Eigen::Vector3f lightPos = light.position - point;
+        // Ambient modulation
+        Eigen::Vector3f La{ka.x() * amb_light_intensity.x(), ka.y() * amb_light_intensity.y(), ka.z() * amb_light_intensity.z()}; 
+        // Diffuse modulation
+        Eigen::Vector3f Ld{kd.x() * light.intensity.x(), kd.y() * light.intensity.y(), kd.z() * light.intensity.z()};
+        Ld *= std::max(0.f, normal.normalized().dot(lightPos.normalized())) / lightPos.squaredNorm();
+        // Specular modulation
+        Eigen::Vector3f Ls{ks.x() * light.intensity.x(), ks.y() * light.intensity.y(), ks.z() * light.intensity.z()};
+        // Reflection
+        Eigen::Vector3f r = reflect(lightPos.normalized(), normal.normalized());
+        Eigen::Vector3f v = (eye_pos - point).normalized();
+        Ls *= std::pow(std::max(0.f, r.dot(v)), p)/ lightPos.squaredNorm();
+        Eigen::Vector3f I = La + Ld + Ls;
+        result_color += I;
 
     }
 
