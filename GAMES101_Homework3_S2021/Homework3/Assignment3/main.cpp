@@ -50,7 +50,38 @@ Eigen::Matrix4f get_model_matrix(float angle)
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
     // TODO: Use the same projection matrix from the previous assignments
+    // TODO: Copy-paste your implementation from the previous assignment.
+    Eigen::Matrix4f projection  = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f persp       = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f orthoScale  = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f orthoTrans  = Eigen::Matrix4f::Identity();
+    // TODO: Implement this function
+    // Create the projection matrix for the given parameters.
+    // Then return it.
+    persp << zNear,     0,            0,             0,
+                 0, zNear,            0,             0,
+                 0,     0, zNear + zFar, -zFar * zNear,
+                 0,     0,            1,             0;
 
+    double halfEyeRadian = eye_fov * MY_PI / 2.0 / 180.0 ;
+    double top           = -zNear * tan(halfEyeRadian);
+    double left          = -top * aspect_ratio;
+    double right         = -left;
+    double bottom        = -top;
+    
+    orthoScale << 2 / (right - left),                  0,                  0,0,
+                                   0, 2 / (top - bottom),                  0,0,
+                                   0,                  0, 2 / (zNear - zFar),0,
+                                   0,                  0,                  0,1;
+
+    orthoTrans << 1, 0, 0, -(right + left) / (right - left),
+                  0, 1, 0, -(top + bottom) / (top - bottom),
+                  0, 0, 1, -(zNear + zFar) / (zNear - zFar),
+                  0, 0, 0, 1;
+
+    projection = orthoTrans * orthoScale * persp;
+
+    return projection;
 }
 
 Eigen::Vector3f vertex_shader(const vertex_shader_payload& payload)
@@ -84,7 +115,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     if (payload.texture)
     {
         // TODO: Get the texture value at the texture coordinates of the current fragment
-
+        
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -247,10 +278,10 @@ int main(int argc, const char** argv)
 
     std::string filename = "output.png";
     objl::Loader Loader;
-    std::string obj_path = "../models/spot/";
+    std::string obj_path = "../Assignment3/models/spot/";
 
     // Load .obj File
-    bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
+    bool loadout = Loader.LoadFile("../Assignment3/models/spot/spot_triangulated_good.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)
