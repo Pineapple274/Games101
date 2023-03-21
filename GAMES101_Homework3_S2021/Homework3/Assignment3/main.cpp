@@ -197,7 +197,7 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
         // Reflection
         Eigen::Vector3f r = reflect(lightPos.normalized(), normal.normalized());
         Eigen::Vector3f v = (eye_pos - point).normalized();
-        Ls *= std::pow(std::max(0.f, r.dot(v)), p)/ lightPos.squaredNorm();
+        Ls *= std::pow(std::max(0.f, r.dot(v)), p) / lightPos.squaredNorm();
         Eigen::Vector3f I = La + Ld + Ls;
         result_color += I;
     }
@@ -272,7 +272,7 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
         // Reflection
         Eigen::Vector3f r = reflect(lightPos.normalized(), normal.normalized());
         Eigen::Vector3f v = (eye_pos - point).normalized();
-        Ls *= std::pow(std::max(0.f, r.dot(v)), p)/ lightPos.squaredNorm();
+        Ls *= std::pow(std::max(0.f, r.dot(v)), p) / lightPos.squaredNorm();
         Eigen::Vector3f I = La + Ld + Ls;
         result_color += I;
 
@@ -326,7 +326,6 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     auto dU = kh * kn * (payload.texture->getColor(u + 1.f / payload.texture->width, v).norm() - payload.texture->getColor(u, v).norm());
     auto dV = kh * kn * (payload.texture->getColor(u, v + 1.f / payload.texture->height).norm() - payload.texture->getColor(u, v).norm());
     Eigen::Vector3f ln{-dU, -dV, 1};
-    point += kn * n * payload.texture->getColor(u, v).norm();
     normal = (TBN * ln).normalized();
 
     Eigen::Vector3f result_color = {0, 0, 0};
