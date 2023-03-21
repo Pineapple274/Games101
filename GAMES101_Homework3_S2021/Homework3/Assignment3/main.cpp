@@ -188,12 +188,12 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
         // components are. Then, accumulate that result on the *result_color* object.
         Eigen::Vector3f lightPos = light.position - point;
         // Ambient modulation
-        Eigen::Vector3f La{ka.x() * amb_light_intensity.x(), ka.y() * amb_light_intensity.y(), ka.z() * amb_light_intensity.z()}; 
+        Eigen::Vector3f La = ka.cwiseProduct(amb_light_intensity); 
         // Diffuse modulation
-        Eigen::Vector3f Ld{kd.x() * light.intensity.x(), kd.y() * light.intensity.y(), kd.z() * light.intensity.z()};
+        Eigen::Vector3f Ld = kd.cwiseProduct(light.intensity);
         Ld *= std::max(0.f, normal.normalized().dot(lightPos.normalized())) / lightPos.squaredNorm();
         // Specular modulation
-        Eigen::Vector3f Ls{ks.x() * light.intensity.x(), ks.y() * light.intensity.y(), ks.z() * light.intensity.z()};
+        Eigen::Vector3f Ls = ks.cwiseProduct(light.intensity);
         // Reflection
         Eigen::Vector3f r = reflect(lightPos.normalized(), normal.normalized());
         Eigen::Vector3f v = (eye_pos - point).normalized();
@@ -263,12 +263,12 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
         // components are. Then, accumulate that result on the *result_color* object.
         Eigen::Vector3f lightPos = light.position - point;
         // Ambient modulation
-        Eigen::Vector3f La{ka.x() * amb_light_intensity.x(), ka.y() * amb_light_intensity.y(), ka.z() * amb_light_intensity.z()}; 
+        Eigen::Vector3f La = ka.cwiseProduct(amb_light_intensity); 
         // Diffuse modulation
-        Eigen::Vector3f Ld{kd.x() * light.intensity.x(), kd.y() * light.intensity.y(), kd.z() * light.intensity.z()};
+        Eigen::Vector3f Ld = kd.cwiseProduct(light.intensity);
         Ld *= std::max(0.f, normal.normalized().dot(lightPos.normalized())) / lightPos.squaredNorm();
         // Specular modulation
-        Eigen::Vector3f Ls{ks.x() * light.intensity.x(), ks.y() * light.intensity.y(), ks.z() * light.intensity.z()};
+        Eigen::Vector3f Ls = ks.cwiseProduct(light.intensity);
         // Reflection
         Eigen::Vector3f r = reflect(lightPos.normalized(), normal.normalized());
         Eigen::Vector3f v = (eye_pos - point).normalized();
