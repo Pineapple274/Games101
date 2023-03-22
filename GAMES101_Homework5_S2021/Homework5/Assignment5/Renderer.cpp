@@ -229,15 +229,18 @@ void Renderer::Render(const Scene& scene)
             // vector that passes through it.
             // Also, don't forget to multiply both of them with the variable *scale*, and
             // x (horizontal) variable with the *imageAspectRatio*            
-
+            x = (2 * (i + 0.5) / (float)scene.width - 1) * imageAspectRatio * scale;
+            y = (1 - 2 * (j + 0.5) / (float)scene.height) * scale;
             Vector3f dir = Vector3f(x, y, -1); // Don't forget to normalize this direction!
+            auto d = sqrt(x * x + y * y + 1);
+            dir = Vector3f(x / d, y / d, -1 / d);
             framebuffer[m++] = castRay(eye_pos, dir, scene, 0);
         }
         UpdateProgress(j / (float)scene.height);
     }
 
     // save framebuffer to file
-    FILE* fp = fopen("binary.ppm", "wb");
+    FILE* fp = fopen("../Assignment5/images/binary.ppm", "wb");
     (void)fprintf(fp, "P6\n%d %d\n255\n", scene.width, scene.height);
     for (auto i = 0; i < scene.height * scene.width; ++i) {
         static unsigned char color[3];
