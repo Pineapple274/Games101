@@ -423,7 +423,7 @@ int main(int argc, const char** argv)
         image.convertTo(image, CV_8UC3, 1.0f);
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 
-        cv::imwrite(filename, image);
+        cv::imwrite("../Assignment3/images/" + filename, image);
 
         return 0;
     }
@@ -443,7 +443,7 @@ int main(int argc, const char** argv)
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 
         cv::imshow("image", image);
-        cv::imwrite(filename, image);
+        cv::imwrite("../Assignment3/images/" + filename, image);
         key = cv::waitKey(10);
 
         if (key == 'a' )
