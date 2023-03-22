@@ -115,7 +115,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     if (payload.texture)
     {
         // TODO: Get the texture value at the texture coordinates of the current fragment
-        return_color = payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
+        return_color = payload.texture->getColorBilinear(payload.tex_coords.x(), payload.tex_coords.y());
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -248,10 +248,10 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
     TBN.col(2) << n;
     auto u = payload.tex_coords.x();
     auto v = payload.tex_coords.y();
-    auto dU = kh * kn * (payload.texture->getColor(u + 1.f / payload.texture->width, v).norm() - payload.texture->getColor(u, v).norm());
-    auto dV = kh * kn * (payload.texture->getColor(u, v + 1.f / payload.texture->height).norm() - payload.texture->getColor(u, v).norm());
+    auto dU = kh * kn * (payload.texture->getColorBilinear(u + 1.f / payload.texture->width, v).norm() - payload.texture->getColorBilinear(u, v).norm());
+    auto dV = kh * kn * (payload.texture->getColorBilinear(u, v + 1.f / payload.texture->height).norm() - payload.texture->getColorBilinear(u, v).norm());
     Eigen::Vector3f ln{-dU, -dV, 1};
-    point += kn * n * payload.texture->getColor(u, v).norm();
+    point += kn * n * payload.texture->getColorBilinear(u, v).norm();
     normal = (TBN * ln).normalized();
 
 
@@ -323,8 +323,8 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     TBN.col(2) << n;
     auto u = payload.tex_coords.x();
     auto v = payload.tex_coords.y();
-    auto dU = kh * kn * (payload.texture->getColor(u + 1.f / payload.texture->width, v).norm() - payload.texture->getColor(u, v).norm());
-    auto dV = kh * kn * (payload.texture->getColor(u, v + 1.f / payload.texture->height).norm() - payload.texture->getColor(u, v).norm());
+    auto dU = kh * kn * (payload.texture->getColorBilinear(u + 1.f / payload.texture->width, v).norm() - payload.texture->getColorBilinear(u, v).norm());
+    auto dV = kh * kn * (payload.texture->getColorBilinear(u, v + 1.f / payload.texture->height).norm() - payload.texture->getColorBilinear(u, v).norm());
     Eigen::Vector3f ln{-dU, -dV, 1};
     normal = (TBN * ln).normalized();
 
