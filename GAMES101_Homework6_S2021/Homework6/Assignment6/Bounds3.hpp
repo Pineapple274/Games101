@@ -66,7 +66,7 @@ class Bounds3
         return o;
     }
 
-    bool Overlaps(const Bounds3& b1, const Bounds3& b2)
+    bool Overlaps(const Bounds3& b1, const Bounds3& b2) const
     {
         bool x = (b1.pMax.x >= b2.pMin.x) && (b1.pMin.x <= b2.pMax.x);
         bool y = (b1.pMax.y >= b2.pMin.y) && (b1.pMin.y <= b2.pMax.y);
@@ -74,7 +74,7 @@ class Bounds3
         return (x && y && z);
     }
 
-    bool Inside(const Vector3f& p, const Bounds3& b)
+    bool Inside(const Vector3f& p, const Bounds3& b) const
     {
         return (p.x >= b.pMin.x && p.x <= b.pMax.x && p.y >= b.pMin.y &&
                 p.y <= b.pMax.y && p.z >= b.pMin.z && p.z <= b.pMax.z);
@@ -97,6 +97,27 @@ inline bool Bounds3::IntersectP(const Ray& ray, const Vector3f& invDir,
     // dirIsNeg: ray direction(x,y,z), dirIsNeg=[int(x>0),int(y>0),int(z>0)], use this to simplify your logic
     // TODO test if ray bound intersects
     
+
+    float t_Min_x = (pMin.x - ray.origin.x) * invDir[0];
+    float t_Min_y = (pMin.y - ray.origin.y) * invDir[1];
+    float t_Min_z = (pMin.z - ray.origin.z) * invDir[2];
+    float t_Max_x = (pMax.x - ray.origin.x) * invDir[0];
+    float t_Max_y = (pMax.y - ray.origin.y) * invDir[1];
+    float t_Max_z = (pMax.z - ray.origin.z) * invDir[2];
+    
+    // if ray direction is negative, swap t_Min and t_Max
+    if(!dirIsNeg[0]) std::swap(t_Min_x, t_Max_x);
+    if(!dirIsNeg[1]) std::swap(t_Min_y, t_Max_y);
+    if(!dirIsNeg[2]) std::swap(t_Min_z, t_Max_z);
+ 
+    float t_enter = std::max(t_Min_x, std::max(t_Min_y, t_Min_z));
+    float t_exit  = std::min(t_Max_x, std::min(t_Max_y, t_Max_z));
+
+    // if t_enter > t_exit, then ray bound does not intersect
+    if(t_enter < t_exit && t_exit >= 0)
+        return true;
+    else
+        return false;
 }
 
 inline Bounds3 Union(const Bounds3& b1, const Bounds3& b2)
