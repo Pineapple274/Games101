@@ -76,9 +76,38 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
         }
 
         auto beginning = objects.begin();
+        // If run withouth SAH, this divides the objects in half on the median
         auto middling = objects.begin() + (objects.size() / 2);
         auto ending = objects.end();
 
+        auto SAH = true;
+
+        // SAH acceleration
+        if(SAH){
+            auto minindex = 0;
+            auto leftbounds = Bounds3(), rightbounds = Bounds3();
+            auto mincost = std::numeric_limits<double>::max();
+            for(auto i = 0; i < objects.size(); i++){
+                for(auto j = beginning; j <= beginning + i; j++){
+                    leftbounds = Union(leftbounds, (*j)->getBounds());
+                }
+                for(auto j = beginning + i + 1; j != ending; j++){
+                    rightbounds = Union(rightbounds, (*j)->getBounds());
+                }
+                auto leftarea = leftbounds.SurfaceArea();
+                auto rightarea = rightbounds.SurfaceArea();
+                auto S = leftarea + rightarea;
+                // Compute the cost of the split
+                auto cost = leftarea / S * (i + 1) + rightarea / S * (objects.size() - i - 1);
+                if(cost < mincost){
+                    mincost = cost;
+                    minindex = i;
+                }
+            }
+            // Split the objects
+            middling = beginning + minindex + 1;
+        }
+        
         auto leftshapes = std::vector<Object*>(beginning, middling);
         auto rightshapes = std::vector<Object*>(middling, ending);
 
@@ -105,15 +134,20 @@ Intersection BVHAccel::Intersect(const Ray& ray) const
 Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
 {
     // TODO Traverse the BVH to find intersection
+    // You can use the following code to check if a ray intersects a bounding box
     if(node->bounds.IntersectP(ray, ray.direction_inv, {ray.direction.x > 0, ray.direction.y > 0, ray.direction.z > 0})){
+        // TODO: check if the node is a leaf node
         if(node->left == nullptr && node->right == nullptr){
             return node->object->getIntersection(ray);
         }
         else{
+            // TODO: recursively traverse the BVH
             auto left  = getIntersection(node->left , ray);
             auto right = getIntersection(node->right, ray);
+            // TODO: return the intersection with the smallest distance
             return left.distance < right.distance ? left : right;
         }
     }
+    // TODO: return an invalid intersection
     return Intersection();
 }
