@@ -96,7 +96,26 @@ inline bool Bounds3::IntersectP(const Ray& ray, const Vector3f& invDir,
     // invDir: ray direction(x,y,z), invDir=(1.0/x,1.0/y,1.0/z), use this because Multiply is faster that Division
     // dirIsNeg: ray direction(x,y,z), dirIsNeg=[int(x>0),int(y>0),int(z>0)], use this to simplify your logic
     // TODO test if ray bound intersects
+    float t_Min_x = (pMin.x - ray.origin.x) * invDir[0];
+    float t_Min_y = (pMin.y - ray.origin.y) * invDir[1];
+    float t_Min_z = (pMin.z - ray.origin.z) * invDir[2];
+    float t_Max_x = (pMax.x - ray.origin.x) * invDir[0];
+    float t_Max_y = (pMax.y - ray.origin.y) * invDir[1];
+    float t_Max_z = (pMax.z - ray.origin.z) * invDir[2];
+        
+    // if ray direction is negative, swap t_Min and t_Max
+    if(!dirIsNeg[0]) std::swap(t_Min_x, t_Max_x);
+    if(!dirIsNeg[1]) std::swap(t_Min_y, t_Max_y);
+    if(!dirIsNeg[2]) std::swap(t_Min_z, t_Max_z);
+ 
+    float t_enter = std::max(t_Min_x, std::max(t_Min_y, t_Min_z));
+    float t_exit  = std::min(t_Max_x, std::min(t_Max_y, t_Max_z));
 
+    // if t_enter > t_exit, then ray bound does not intersect
+    if(t_enter <= t_exit && t_exit >= 0)
+        return true;
+    else
+        return false;
 }
 
 inline Bounds3 Union(const Bounds3& b1, const Bounds3& b2)
