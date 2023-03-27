@@ -28,7 +28,7 @@ void Renderer::Render(const Scene& scene)
  
     // change the spp value to change sample ammount
     // spp： sample per pixel
-    int spp = 16;  //原本16
+    int spp = 256;  //原本16
     std::cout << "SPP: " << spp << "\n";
     int thred = 24;
     int per = scene.height/thred;  // 960/24=40

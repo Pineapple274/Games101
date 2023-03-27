@@ -64,45 +64,48 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
     auto L_dir = Vector3f(0, 0, 0), L_indir = Vector3f(0, 0, 0);
     auto obj_inter = intersect(ray);
 
-    // No intersection
-    if(!obj_inter.happened) return L_dir;
+    // Exist intersection
+    if(obj_inter.happened){
+        // First hit light
+        if(obj_inter.m->hasEmission()){
+            if(depth == 0) return obj_inter.m->getEmission();
+            else return L_dir + L_indir;
+        }
 
-    // Is light oringin
-    if(obj_inter.m->hasEmission()) return obj_inter.m->getEmission();
+        // Is objects
+        auto p = obj_inter.coords;
+        auto n = obj_inter.normal;
+        auto wo = ray.direction;
 
-    // Is objects
-    auto p = obj_inter.coords;
-    auto n = obj_inter.normal.normalized();
-    auto wo = ray.direction;
-    
-    // Sample light
-    auto light_inter = Intersection();
-    auto pdf_light = 0.0f;
-    sampleLight(light_inter, pdf_light);
-    
-    // Adjust ray is blocked or not
-    auto x  = light_inter.coords;
-    auto emit = light_inter.emit;
-    auto nn = light_inter.normal.normalized();
-    auto ws = (x - p).normalized();
-    auto shadow_ray = Ray(p, ws);
-    auto shadow_inter = intersect(shadow_ray);
-    auto light_distance = (x - p).norm();
+        // Sample light
+        auto light_inter = Intersection();
+        auto pdf_light = 0.0f;
+        sampleLight(light_inter, pdf_light);
 
-    // Direct light
-    if(shadow_inter.distance - light_distance > -EPSILON) {
-        L_dir = emit * obj_inter.m->eval(wo, ws, n) * dotProduct(ws, n) * dotProduct(-ws, nn)
-                / pow(light_inter.distance, 2) / pdf_light;
-    }
+        // Adjust ray is blocked or not
+        auto x  = light_inter.coords;
+        auto emit = light_inter.emit;
+        auto nn = light_inter.normal;
+        auto ws = (x - p).normalized();
+        auto shadow_ray = Ray(p, ws);
+        auto shadow_inter = intersect(shadow_ray);
 
-    // Indirect light
-    if(RussianRoulette > get_random_float()){
-        auto wi = obj_inter.m->sample(wo, n).normalized();
-        auto new_ray = Ray(p, wi);
-        auto hit = intersect(new_ray);
-        if(hit.happened){
-            L_indir = castRay(new_ray, depth + 1) * obj_inter.m->eval(wo, wi, n) * dotProduct(wi, n) 
-            / obj_inter.m->pdf(wo, wi, n) / RussianRoulette;
+        // Direct light
+        if(shadow_inter.happened && (shadow_inter.coords - light_inter.coords).norm() < 1e2 * EPSILON) {
+            auto f_r = obj_inter.m->eval(wo, ws, n);
+            L_dir = emit * f_r * dotProduct(ws, n) * dotProduct(-ws, nn) / std::pow((x - p).norm(), 2) / pdf_light;
+        }
+
+        // Indirect light
+        if(RussianRoulette > get_random_float()){
+            auto wi = obj_inter.m->sample(wo, n).normalized();
+            auto new_ray = Ray(p, wi);
+            auto hit = intersect(new_ray);
+            if(hit.happened && !hit.m->hasEmission()){
+                auto pdf = obj_inter.m-> pdf(wo, wi, n);
+                auto f_r = obj_inter.m->eval(wo, wi, n);
+                L_indir = castRay(new_ray, depth + 1) * f_r * dotProduct(wi, n) / pdf / RussianRoulette;
+            }
         }
     }
 
